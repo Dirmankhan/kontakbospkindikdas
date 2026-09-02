@@ -387,11 +387,7 @@
       .map(function (item) {
         var phoneCell;
         if (item.noHpWa) {
-          var text = encodeURIComponent(
-            "Yth. Bapak/Ibu " + item.nama + ",\n\nKami dari BPMP Provinsi NTB ingin menyampaikan informasi terkait " +
-              item.jenisBimtek +
-              "."
-          );
+          var text = encodeURIComponent("Yth. Bapak/Ibu " + item.nama + ",");
           phoneCell =
             '<a class="wa-btn" target="_blank" rel="noopener" href="https://wa.me/' +
             item.noHpWa +
