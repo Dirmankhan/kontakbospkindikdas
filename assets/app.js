@@ -34,31 +34,65 @@
     loadData();
   });
 
+  // The exact gid of the response tab isn't always known (Google Forms can
+  // create it as a non-zero gid, or the doc has multiple tabs), and a wrong
+  // gid makes /export return HTTP 400. Try several candidate URLs and accept
+  // the first one that actually contains the expected header columns.
+  function candidateUrls() {
+    var id = encodeURIComponent(CONFIG.sheetId);
+    var ts = "&_ts=" + Date.now();
+    var urls = [];
+    if (CONFIG.gid) {
+      urls.push(
+        "https://docs.google.com/spreadsheets/d/" + id +
+          "/export?format=csv&gid=" + encodeURIComponent(CONFIG.gid) + ts
+      );
+      urls.push(
+        "https://docs.google.com/spreadsheets/d/" + id +
+          "/gviz/tq?tqx=out:csv&gid=" + encodeURIComponent(CONFIG.gid) + ts
+      );
+    }
+    // No/omitted gid defaults to the first visible sheet tab.
+    urls.push(
+      "https://docs.google.com/spreadsheets/d/" + id + "/gviz/tq?tqx=out:csv" + ts
+    );
+    urls.push(
+      "https://docs.google.com/spreadsheets/d/" + id + "/export?format=csv" + ts
+    );
+    return urls;
+  }
+
+  function fetchCsv(urls, index) {
+    if (index >= urls.length) {
+      return Promise.reject(
+        new Error("Semua percobaan pengambilan data gagal (cek sharing & gid sheet).")
+      );
+    }
+    return fetch(urls[index], { credentials: "omit" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.text();
+      })
+      .then(function (text) {
+        var rows = parseCSV(text);
+        if (!rows.length || findColumn(rows[0], "Nama Peserta") === -1) {
+          throw new Error("Header kolom tidak cocok pada URL ini.");
+        }
+        return rows;
+      })
+      .catch(function () {
+        return fetchCsv(urls, index + 1);
+      });
+  }
+
   function loadData() {
     if (!CONFIG.sheetId) {
       showError("Konfigurasi sumber data (data/config.js) belum diisi.");
       return;
     }
-    var url =
-      "https://docs.google.com/spreadsheets/d/" +
-      encodeURIComponent(CONFIG.sheetId) +
-      "/export?format=csv&gid=" +
-      encodeURIComponent(CONFIG.gid || "0") +
-      "&_ts=" +
-      Date.now();
 
-    fetch(url, { credentials: "omit" })
-      .then(function (res) {
-        if (!res.ok) {
-          throw new Error("HTTP " + res.status);
-        }
-        return res.text();
-      })
-      .then(function (text) {
-        var rows = parseCSV(text);
-        if (!rows.length) {
-          throw new Error("Spreadsheet kosong atau tidak dapat dibaca.");
-        }
+    fetchCsv(candidateUrls(), 0)
+      .then(function (rows) {
         state.all = mapRows(rows);
         state.filtered = state.all;
         populateFilters(state.all);
