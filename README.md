@@ -19,6 +19,31 @@ kali halaman dibuka:
 - URL sumber: `https://docs.google.com/spreadsheets/d/<sheetId>/export?format=csv&gid=<gid>`
 - ID spreadsheet dan gid diatur di `data/config.js`.
 
+## Gerbang password (proteksi ringan)
+
+Situs ini menampilkan layar password sebelum tabel data dimuat
+(`data/config.js` → `passwordHash`, sebuah hash SHA-256, bukan teks polos).
+Ini **hanya penghalang ringan** untuk mencegah orang yang kebetulan
+mendapat link situs langsung melihat data — **bukan keamanan sungguhan**:
+siapa pun yang cukup teknis bisa membaca hash-nya dari source code lalu
+mem-brute-force password pendek, atau langsung membuka Google Sheet
+sumbernya kalau tahu link-nya. Untuk perlindungan data yang sebenarnya,
+batasi sharing Google Sheet ke akun/domain tertentu (lihat bagian di
+bawah), bukan mengandalkan gerbang ini.
+
+Setelah password benar dimasukkan sekali, status "sudah login" disimpan di
+`sessionStorage` browser (hilang saat tab/browser ditutup).
+
+Untuk mengganti password, hitung ulang hash SHA-256-nya lalu ganti nilai
+`passwordHash` di `data/config.js`. Bisa dihitung lewat console browser:
+
+```js
+crypto.subtle.digest('SHA-256', new TextEncoder().encode('password-baru'))
+  .then(b => console.log([...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join('')))
+```
+
+## Kontrol akses data (Google Sheet)
+
 Karena itu, **kontrol akses terhadap data sepenuhnya bergantung pada
 pengaturan share Google Sheet**, bukan pada repositori ini:
 

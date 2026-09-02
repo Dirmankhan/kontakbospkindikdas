@@ -7,7 +7,17 @@
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
-  <div class="page">
+  <div id="gate" class="gate">
+    <form id="gate-form" class="gate-card">
+      <h2>Akses Terbatas</h2>
+      <p>Masukkan password untuk membuka direktori kontak.</p>
+      <input id="gate-password" type="password" placeholder="Password" autocomplete="current-password" required />
+      <button type="submit">Masuk</button>
+      <p id="gate-error" class="gate-error" hidden>Password salah, coba lagi.</p>
+    </form>
+  </div>
+
+  <div class="page" id="page" hidden>
     <header class="hero">
       <h1>Direktori Kontak Peserta Bimtek</h1>
       <p>Jenjang PAUD, SD, SMP, SKB, dan PKBM &mdash; klik nomor HP untuk mengirim pesan WhatsApp langsung.</p>

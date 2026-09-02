@@ -16,8 +16,15 @@
   };
 
   var els = {};
+  var AUTH_KEY = "kontakbospkin_auth";
 
   document.addEventListener("DOMContentLoaded", function () {
+    els.gate = document.getElementById("gate");
+    els.gateForm = document.getElementById("gate-form");
+    els.gatePassword = document.getElementById("gate-password");
+    els.gateError = document.getElementById("gate-error");
+    els.page = document.getElementById("page");
+
     els.status = document.getElementById("status");
     els.controls = document.getElementById("controls");
     els.tableWrap = document.getElementById("table-wrap");
@@ -31,8 +38,59 @@
     els.filterJabatan = document.getElementById("filter-jabatan");
     els.resetBtn = document.getElementById("reset-filters");
 
-    loadData();
+    initGate();
   });
+
+  function sha256Hex(text) {
+    if (!window.crypto || !window.crypto.subtle) {
+      return Promise.reject(new Error("crypto.subtle tidak tersedia (perlu HTTPS)."));
+    }
+    var data = new TextEncoder().encode(text);
+    return window.crypto.subtle.digest("SHA-256", data).then(function (buf) {
+      return Array.prototype.map
+        .call(new Uint8Array(buf), function (b) {
+          return b.toString(16).padStart(2, "0");
+        })
+        .join("");
+    });
+  }
+
+  function unlockApp() {
+    els.gate.hidden = true;
+    els.page.hidden = false;
+    loadData();
+  }
+
+  function initGate() {
+    if (!CONFIG.passwordHash) {
+      unlockApp();
+      return;
+    }
+    if (sessionStorage.getItem(AUTH_KEY) === CONFIG.passwordHash) {
+      unlockApp();
+      return;
+    }
+    els.gateForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var pwd = els.gatePassword.value;
+      sha256Hex(pwd)
+        .then(function (hash) {
+          if (hash === CONFIG.passwordHash) {
+            sessionStorage.setItem(AUTH_KEY, hash);
+            els.gateError.hidden = true;
+            unlockApp();
+          } else {
+            els.gateError.hidden = false;
+            els.gatePassword.value = "";
+            els.gatePassword.focus();
+          }
+        })
+        .catch(function (err) {
+          els.gateError.hidden = false;
+          els.gateError.textContent = err.message;
+        });
+    });
+  }
 
   // The exact gid of the response tab isn't always known (Google Forms can
   // create it as a non-zero gid, or the doc has multiple tabs), and a wrong
