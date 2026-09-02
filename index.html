@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Direktori Kontak Peserta Bimtek - BPMP Provinsi NTB</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Direktori Kontak Peserta Bimtek</h1>
+      <p>BPMP Provinsi NTB &mdash; klik nomor HP untuk mengirim pesan WhatsApp langsung.</p>
+    </header>
+
+    <div id="status" class="card status">Memuat data dari Google Sheet...</div>
+
+    <div id="controls" class="card" hidden>
+      <input id="search" type="search" placeholder="Cari nama, no HP, sekolah, atau gugus..." />
+      <select id="filter-kab"></select>
+      <select id="filter-jenjang"></select>
+      <select id="filter-bimtek"></select>
+      <select id="filter-jabatan"></select>
+      <button id="reset-filters" type="button">Reset Filter</button>
+    </div>
+
+    <p id="summary" class="summary"></p>
+
+    <div id="table-wrap" class="table-scroll" hidden>
+      <table>
+        <thead>
+          <tr>
+            <th>Nama Peserta</th>
+            <th>Jabatan</th>
+            <th>No Hp</th>
+            <th>Jenis Bimtek</th>
+            <th>Kab/Kota</th>
+            <th>Jenjang Sekolah</th>
+            <th>NPSN</th>
+            <th>Nama Sekolah</th>
+            <th>Nama Gugus</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div id="pagination" class="pagination"></div>
+
+    <footer class="note">
+      Data diambil langsung dari Google Sheet sumber, tidak disimpan di repositori ini.
+    </footer>
+  </div>
+
+  <script src="data/config.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
