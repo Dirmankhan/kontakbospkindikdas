@@ -5,6 +5,12 @@ Platform web statis untuk menampilkan dan mencari kontak peserta Bimtek
 NPSN, Nama Sekolah, Nama Gugus), dengan tombol untuk langsung mengirim
 pesan WhatsApp ke nomor yang dipilih.
 
+Ada dua halaman, masing-masing dengan sheet sumber sendiri dan saling
+tertaut lewat menu di header:
+
+- `index.html` — Jenjang PAUD, SD, SMP, SKB, dan PKBM
+- `dikmen.html` — Jenjang Dikmen: SMA, SMK, dan SLB
+
 ## Cara kerja & privasi data
 
 Repositori ini **publik**, sedangkan data peserta (nama dan nomor HP)
@@ -61,11 +67,13 @@ mengubah kode di repo ini.
 ## Struktur proyek
 
 ```
-index.html          Halaman utama (tabel, pencarian, filter)
-assets/style.css     Tampilan
-assets/app.js        Fetch + parse CSV, normalisasi nomor WA, render tabel,
-                      pencarian, filter, dan pagination
-data/config.js       ID Google Sheet & gid sumber data (bukan data itu sendiri)
+index.html            Halaman PAUD/SD/SMP/SKB/PKBM (tabel, pencarian, filter)
+dikmen.html           Halaman Dikmen: SMA/SMK/SLB (struktur identik ke index.html)
+assets/style.css       Tampilan (dipakai kedua halaman)
+assets/app.js          Fetch + parse CSV, normalisasi nomor WA, render tabel,
+                        pencarian, filter, dan pagination (dipakai kedua halaman)
+data/config.js         ID Google Sheet, gid, dan password untuk index.html
+data/config-dikmen.js  ID Google Sheet, gid, dan password untuk dikmen.html
 ```
 
 ## Menjalankan / deploy
@@ -90,10 +98,31 @@ python3 -m http.server 8000
 ## Mengganti sumber data
 
 Jika suatu saat form/spreadsheet sumber berganti, cukup ubah `sheetId` dan
-`gid` di `data/config.js`. Nama-nama kolom yang dibaca dari sheet harus
-persis sama dengan: `Nama Peserta`, `Jabatan`, `No Hp`, `Jenis Bimtek`,
-`Kab/Kota`, `Jenjang Sekolah`, `NPSN`, `Nama Sekolah`, `Nama Gugus`
-(kolom-kolom lain di sheet diabaikan).
+`gid` di `data/config.js` (atau `data/config-dikmen.js` untuk halaman
+Dikmen). Secara default nama-nama kolom yang dicari di sheet adalah:
+`Nama Peserta`, `Jabatan`, `No Hp`, `Jenis Bimtek`, `Kab/Kota`,
+`Jenjang Sekolah`, `NPSN`, `Nama Sekolah`, `Nama Gugus` (kolom lain di
+sheet diabaikan; pencocokan nama tidak peka huruf besar/kecil).
+
+Kalau sheet sumber memakai penamaan kolom yang sedikit berbeda (seperti
+sheet Dikmen yang memakai "No HP" dan "Jenjang" alih-alih "No Hp" dan
+"Jenjang Sekolah"), override lewat `columns` di file config halaman
+tersebut — lihat contoh di `data/config-dikmen.js`. Cukup sebutkan field
+yang berbeda; field lain otomatis memakai nama default.
+
+## Menambah halaman/jenjang baru
+
+Untuk menambah direktori jenjang lain di masa depan:
+
+1. Duplikasi `dikmen.html` menjadi file baru, ganti judul/subjudul di
+   `<title>` dan `<header class="hero">`, serta `src` config-nya.
+2. Buat `data/config-<nama>.js` baru menunjuk ke sheet sumbernya.
+3. Tambahkan link ke halaman baru pada `<nav class="hero-nav">` di semua
+   halaman (termasuk halaman baru itu sendiri, menunjuk balik ke halaman
+   lain).
+
+`assets/app.js` dan `assets/style.css` dipakai bersama, tidak perlu
+disalin.
 
 ## Normalisasi nomor WhatsApp
 

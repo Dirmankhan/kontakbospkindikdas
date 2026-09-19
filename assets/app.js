@@ -133,7 +133,8 @@
       })
       .then(function (text) {
         var rows = parseCSV(text);
-        if (!rows.length || findColumn(rows[0], "Nama Peserta") === -1) {
+        var namaCol = (CONFIG.columns && CONFIG.columns.nama) || "Nama Peserta";
+        if (!rows.length || findColumn(rows[0], namaCol) === -1) {
           throw new Error("Header kolom tidak cocok pada URL ini.");
         }
         return rows;
@@ -242,25 +243,36 @@
 
   function findColumn(header, name) {
     var idx = -1;
+    var target = name.trim().toLowerCase();
     for (var i = 0; i < header.length; i++) {
-      if (header[i].trim() === name) idx = i;
+      if (header[i].trim().toLowerCase() === target) idx = i;
     }
     return idx;
   }
 
+  // Column header text can vary slightly between source sheets (e.g. "No Hp"
+  // vs "No HP", or the consolidated jenjang column being named "Jenjang"
+  // instead of "Jenjang Sekolah"). CONFIG.columns lets each page override
+  // the exact header text to look for without needing a separate app.js.
+  var DEFAULT_COLUMNS = {
+    nama: "Nama Peserta",
+    jabatan: "Jabatan",
+    noHp: "No Hp",
+    jenisBimtek: "Jenis Bimtek",
+    kabKota: "Kab/Kota",
+    jenjangSekolah: "Jenjang Sekolah",
+    npsn: "NPSN",
+    namaSekolah: "Nama Sekolah",
+    namaGugus: "Nama Gugus",
+  };
+
   function mapRows(rows) {
     var header = rows[0];
-    var cols = {
-      nama: findColumn(header, "Nama Peserta"),
-      jabatan: findColumn(header, "Jabatan"),
-      noHp: findColumn(header, "No Hp"),
-      jenisBimtek: findColumn(header, "Jenis Bimtek"),
-      kabKota: findColumn(header, "Kab/Kota"),
-      jenjangSekolah: findColumn(header, "Jenjang Sekolah"),
-      npsn: findColumn(header, "NPSN"),
-      namaSekolah: findColumn(header, "Nama Sekolah"),
-      namaGugus: findColumn(header, "Nama Gugus"),
-    };
+    var columnNames = CONFIG.columns || {};
+    var cols = {};
+    Object.keys(DEFAULT_COLUMNS).forEach(function (key) {
+      cols[key] = findColumn(header, columnNames[key] || DEFAULT_COLUMNS[key]);
+    });
 
     var missing = Object.keys(cols).filter(function (k) {
       return cols[k] === -1;

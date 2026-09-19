@@ -123,6 +123,37 @@ header.hero p {
   font-size: 0.95rem;
 }
 
+.hero-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.hero-nav a,
+.hero-nav-active {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hero-nav a {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.hero-nav a:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.hero-nav-active {
+  background: #fff;
+  color: var(--primary-dark);
+}
+
 .card {
   background: var(--card-bg);
   border: 1px solid var(--border);
